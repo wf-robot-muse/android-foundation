@@ -1,0 +1,38 @@
+# fastlane configuration for AndroidFoundation.
+#
+# Current state: foundation only. The `ci_build` lane runs today with no
+# Google account. The `internal` lane is a placeholder for Google Play
+# internal-track distribution; it activates once Wade has a Play Console
+# account and the signing + service-account secrets described in
+# README.md are in place.
+
+default_platform(:android)
+
+platform :android do
+  desc "Build debug APK and release bundle, run unit tests (matches CI)"
+  lane :ci_build do
+    # gradle_path points at the CI-installed Gradle: the wrapper JAR is not
+    # in the repo yet (see README.md > Gradle wrapper note).
+    gradle(task: "assembleDebug bundleRelease testDebugUnitTest", gradle_path: "gradle")
+  end
+
+  desc "Upload the release bundle to the Play internal track (requires Play Console account + secrets)"
+  lane :internal do
+    # TODO (activates with Wade's Google Play Console account, $25 one-time):
+    # 1. Generate an upload keystore; store it base64-encoded as the GitHub
+    #    secret ANDROID_KEYSTORE_BASE64, plus ANDROID_KEYSTORE_PASSWORD,
+    #    ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD.
+    # 2. Add a signingConfig in app/build.gradle.kts that reads those values
+    #    from environment variables and apply it to the release build type.
+    # 3. Create a Google Cloud service account with Play Console access and
+    #    store its JSON key as the GitHub secret PLAY_SERVICE_ACCOUNT_JSON.
+    # Then implement:
+    #   gradle(task: "clean bundleRelease")
+    #   upload_to_play_store(
+    #     track: "internal",
+    #     aab: "app/build/outputs/bundle/release/app-release.aab",
+    #     json_key_data: ENV["PLAY_SERVICE_ACCOUNT_JSON"]
+    #   )
+    UI.user_error!("Play upload lane is not configured yet. See README.md > Signing and Google Play.")
+  end
+end
